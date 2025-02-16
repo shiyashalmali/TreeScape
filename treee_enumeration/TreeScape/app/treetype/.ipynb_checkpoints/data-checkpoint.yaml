@@ -1,0 +1,5 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+nc: 13
+names: ['Basketball Court', 'Bus', 'Car', 'Children Play Area', 'Coniferous Tree', 'Deciduous Tree', 'Lawn Issues', 'Park Bench', 'Park Table', 'Person', 'Power Lines', 'Tennis Court', 'Waterpark']

@@ -1,0 +1,422 @@
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tree Count Estimator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        input[type="file"], button {
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        .image-container img {
+            max-width: 90%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        .result {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Tree Count Estimator</h2>
+    <div>
+        <input type="file" id="image-file" accept="image/*">
+        <button onclick="uploadAndProcessImage()">Process Image</button>
+    </div>
+    <div class="image-container">
+        <img id="uploaded-image" src="" alt="Uploaded Image" style="display:none;">
+    </div>
+    <div class="result">
+        <p><b>Tree Count:</b> <span id="tree-count">N/A</span></p>
+    </div>
+
+    <script>
+function uploadAndProcessImage() {
+    const fileInput = document.getElementById('image-file');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please upload an image first.");
+        return;
+    }
+
+    // Convert image to Base64
+    const reader = new FileReader();
+    reader.onloadend = function () {
+        const base64Image = reader.result;
+
+        // Display uploaded image
+        const uploadedImage = document.getElementById('uploaded-image');
+        uploadedImage.src = base64Image;
+        uploadedImage.style.display = "block"; // Show the image
+
+        // Send the image to the backend
+        const data = { image: base64Image.split(',')[1] }; // Send only the Base64 part
+
+        fetch('http://127.0.0.1:5000/count-trees', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.tree_count !== undefined) {
+                document.getElementById('tree-count').textContent = data.tree_count; // Update tree count
+            } else {
+                document.getElementById('tree-count').textContent = "Error: Tree count not found";
+            }
+
+            if (data.processed_image_url) {
+                // Add processed image to the page
+                const processedImage = document.createElement('img');
+                processedImage.src = data.processed_image_url;
+                processedImage.alt = "Processed Image";
+                processedImage.style.maxWidth = '90%';
+                processedImage.style.marginTop = '20px';
+
+                document.querySelector('.image-container').appendChild(processedImage);
+            } else {
+                console.error("Processed image URL not found in the response");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("An error occurred while processing the image.");
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+</script>
+
+
+</body>
+</html> -->
+
+<!-- ------------------------------------------------------------------------------------------------------ -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tree Count Estimator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        h2 {
+            color: #2e7d32;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 i {
+            margin-right: 10px;
+            color: #43a047;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border: 2px dashed #81c784;
+            border-radius: 15px;
+            background: rgba(129, 199, 132, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: rgba(129, 199, 132, 0.2);
+        }
+
+        .file-input-wrapper {
+            margin-bottom: 1rem;
+        }
+
+        #image-file {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #66bb6a;
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-input-label:hover {
+            background: #43a047;
+            transform: translateY(-2px);
+        }
+
+        .process-btn {
+            background: #43a047;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 160, 71, 0.2);
+        }
+
+        .process-btn:hover {
+            background: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.3);
+        }
+
+        .process-btn i {
+            margin-right: 8px;
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .image-wrapper {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+            background: white;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .image-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .result {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #2e7d32;
+            padding: 1.5rem;
+            background: rgba(129, 199, 132, 0.1);
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        .result i {
+            margin-right: 8px;
+            color: #43a047;
+        }
+
+        .selected-file-name {
+            color: #666;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+            color: #43a047;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-tree"></i>Tree Count Estimator</h2>
+        
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <label for="image-file" class="file-input-label">
+                    <i class="fas fa-upload"></i> Choose Image
+                </label>
+                <input type="file" id="image-file" accept="image/*" onchange="updateFileName()">
+                <div class="selected-file-name" id="file-name"></div>
+            </div>
+            <button class="process-btn" onclick="uploadAndProcessImage()">
+                <i class="fas fa-magic"></i>Process Image
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-2x"></i>
+            <p>Processing image...</p>
+        </div>
+
+        <div class="result">
+            <p><i class="fas fa-leaf"></i>Tree Count: <span id="tree-count">N/A</span></p>
+        </div>
+
+        <div class="image-container" id="image-container"></div>
+    </div>
+
+    <script>
+        function updateFileName() {
+            const fileInput = document.getElementById('image-file');
+            const fileName = document.getElementById('file-name');
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            } else {
+                fileName.textContent = '';
+            }
+        }
+
+        function uploadAndProcessImage() {
+            const fileInput = document.getElementById('image-file');
+            const file = fileInput.files[0];
+            const loading = document.getElementById('loading');
+
+            if (!file) {
+                alert("Please upload an image first.");
+                return;
+            }
+
+            loading.style.display = 'block';
+
+            const reader = new FileReader();
+            reader.onloadend = function () {
+                const base64Image = reader.result;
+                const imageContainer = document.getElementById('image-container');
+                imageContainer.innerHTML = ''; // Clear previous images
+
+                // Create wrapper for original image
+                const originalWrapper = document.createElement('div');
+                originalWrapper.className = 'image-wrapper';
+                const originalImage = document.createElement('img');
+                originalImage.src = base64Image;
+                originalImage.alt = "Original Image";
+                originalWrapper.appendChild(originalImage);
+                imageContainer.appendChild(originalWrapper);
+
+                const data = { image: base64Image.split(',')[1] };
+
+                fetch('http://127.0.0.1:5000/count-trees', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (data.tree_count !== undefined) {
+                        document.getElementById('tree-count').textContent = data.tree_count;
+                    } else {
+                        document.getElementById('tree-count').textContent = "Error: Tree count not found";
+                    }
+
+                    if (data.processed_image_url) {
+                        // Create wrapper for processed image
+                        const processedWrapper = document.createElement('div');
+                        processedWrapper.className = 'image-wrapper';
+                        const processedImage = document.createElement('img');
+                        processedImage.src = data.processed_image_url;
+                        processedImage.alt = "Processed Image";
+                        processedWrapper.appendChild(processedImage);
+                        imageContainer.appendChild(processedWrapper);
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    console.error('Error:', error);
+                    alert("An error occurred while processing the image.");
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

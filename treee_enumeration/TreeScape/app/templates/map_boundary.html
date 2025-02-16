@@ -1,0 +1,810 @@
+<!--?<!DOCTYPE html>-->
+<!--?<html lang="en">-->
+<!--?<head>-->
+<!--?    <meta charset="UTF-8">-->
+<!--?    <title>Google Map TreeScape</title>-->
+<!--?    <style>-->
+<!--?        body {-->
+<!--?            background-color: #f4f4f4;-->
+<!--?            font-family: Arial, sans-serif;-->
+<!--?            color: #333;-->
+<!--?            text-align: center;-->
+<!--?        }-->
+<!--?        #map {-->
+<!--?            height: 400px;-->
+<!--?            width: 80%;-->
+<!--?            margin: 0 auto;-->
+<!--?            border: 2px solid #ddd;-->
+<!--?            border-radius: 5px;-->
+<!--?        }-->
+<!--?        #output {-->
+<!--?            margin-top: 20px;-->
+<!--?            padding: 20px;-->
+<!--?            background-color: #fff;-->
+<!--?            border: 2px solid #ddd;-->
+<!--?        }-->
+<!--?    </style>-->
+<!--?</head>-->
+<!--?<body>-->
+<!--?    <h1>Draw Your Map Boundary</h1>-->
+<!--?    <div id="map"></div>-->
+<!--?    <div id="output">-->
+<!--?        <h2>Cropped Image</h2>-->
+<!--?        <img id="croppedImage" src="" alt="Cropped Image" crossorigin="anonymous">-->
+<!--?        <div id="locationInfo"></div>-->
+<!--?    </div>-->
+
+<!--?    <script>-->
+<!--?        function initMap() {-->
+<!--?            // Initialize the map-->
+<!--?            const map = new google.maps.Map(document.getElementById('map'), {-->
+<!--?                center: { lat: 23.2599, lng: 77.4126 }, // Default center-->
+<!--?                zoom: 12,-->
+<!--?            });-->
+
+<!--?            let currentRectangle = null;-->
+
+<!--?            // Initialize Drawing Manager-->
+<!--?            const drawingManager = new google.maps.drawing.DrawingManager({-->
+<!--?                drawingMode: google.maps.drawing.OverlayType.RECTANGLE,-->
+<!--?                drawingControl: true,-->
+<!--?                drawingControlOptions: {-->
+<!--?                    position: google.maps.ControlPosition.TOP_CENTER,-->
+<!--?                    drawingModes: ['rectangle'],-->
+<!--?                },-->
+<!--?            });-->
+
+<!--?            // Set Drawing Manager on map-->
+<!--?            drawingManager.setMap(map);-->
+
+<!--?            // Handle the rectangle drawing completion-->
+<!--?            google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {-->
+<!--?                if (currentRectangle) {-->
+<!--?                    currentRectangle.setMap(null); // Remove the previous rectangle-->
+<!--?                }-->
+
+<!--?                currentRectangle = event.overlay; // Store the new rectangle-->
+
+<!--?                // Get the rectangle bounds-->
+<!--?                const bounds = currentRectangle.getBounds();-->
+<!--?                const northEast = bounds.getNorthEast();-->
+<!--?                const southWest = bounds.getSouthWest();-->
+
+<!--?                // Display the bounds in the console-->
+<!--?                console.log('Rectangle drawn with bounds:', bounds.toString());-->
+
+<!--?                // Display the location info-->
+<!--?                const locationInfoDiv = document.getElementById('locationInfo');-->
+<!--?                locationInfoDiv.innerHTML = `-->
+<!--?                    <p>North-East: (${northEast.lat()}, ${northEast.lng()})</p>-->
+<!--?                    <p>South-West: (${southWest.lat()}, ${southWest.lng()})</p>-->
+<!--?                `;-->
+<!--?            });-->
+<!--?        }-->
+<!--?    </script>-->
+
+<!--?    <!-- Include the Google Maps API script -->
+<!--?    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpzV2uci8gLyp8si2idL0Gy1PLUe_J8bU&libraries=drawing&callback=initMap"></script>-->
+<!--?</body>-->
+<!--?</html>-->
+<!--?<!DOCTYPE html>-->
+<!--?<html lang="en">-->
+<!--?<head>-->
+<!--?    <meta charset="UTF-8">-->
+<!--?    <title>Google Map TreeScape</title>-->
+<!--?    <style>-->
+<!--?        body { background-color: #f4f4f4; font-family: Arial, sans-serif; color: #333; text-align: center; }-->
+<!--?        #map { height: 400px; width: 80%; margin: 0 auto; border: 2px solid #ddd; border-radius: 5px; }-->
+<!--?        #output { margin-top: 20px; padding: 20px; background-color: #fff; border: 2px solid #ddd; }-->
+<!--?    </style>-->
+<!--?</head>-->
+<!--?<body>-->
+<!--?    <h1>Draw Your Map Boundary</h1>-->
+<!--?    <div id="map"></div>-->
+<!--?    <form id="mapBoundaryForm" action="{{ url_for('main.process_map_boundary') }}" method="post">-->
+<!--?        <input type="hidden" name="boundaryData" id="boundaryData">-->
+<!--?        <button type="submit">Submit Boundary</button>-->
+<!--?    </form>-->
+<!--?    <script>-->
+<!--?        let currentRectangle = null;-->
+
+<!--?        function initMap() {-->
+<!--?            const map = new google.maps.Map(document.getElementById('map'), {-->
+<!--?                center: { lat: 23.2599, lng: 77.4126 }, // Default center (Bhopal)-->
+<!--?                zoom: 12-->
+<!--?            });-->
+
+<!--?            const drawingManager = new google.maps.drawing.DrawingManager({-->
+<!--?                drawingMode: google.maps.drawing.OverlayType.RECTANGLE,-->
+<!--?                drawingControl: true,-->
+<!--?                drawingControlOptions: {-->
+<!--?                    position: google.maps.ControlPosition.TOP_CENTER,-->
+<!--?                    drawingModes: ['rectangle'],-->
+<!--?                },-->
+<!--?            });-->
+
+<!--?            drawingManager.setMap(map);-->
+
+<!--?            google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {-->
+<!--?                if (currentRectangle) {-->
+<!--?                    currentRectangle.setMap(null); // Remove the previous rectangle-->
+<!--?                }-->
+<!--?                currentRectangle = event.overlay;-->
+
+<!--?                // Get the rectangle's bounds-->
+<!--?                const bounds = currentRectangle.getBounds();-->
+<!--?                const boundaryData = {-->
+<!--?                    north: bounds.getNorthEast().lat(),-->
+<!--?                    east: bounds.getNorthEast().lng(),-->
+<!--?                    south: bounds.getSouthWest().lat(),-->
+<!--?                    west: bounds.getSouthWest().lng(),-->
+<!--?                };-->
+
+<!--?                // Set the hidden input value-->
+<!--?                document.getElementById('boundaryData').value = JSON.stringify(boundaryData);-->
+<!--?            });-->
+<!--?        }-->
+<!--?    </script>-->
+<!--?    <!-- Include Google Maps API -->
+<!--?    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=drawing&callback=initMap"></script>-->
+<!--?    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpzV2uci8gLyp8si2idL0Gy1PLUe_J8bU&libraries=drawing&callback=initMap"></script>-->
+
+<!--?</body>-->
+<!--?</html>-->
+<!--?<!DOCTYPE html>-->
+<!--?<html lang="en">-->
+<!--?<head>-->
+<!--?    <meta charset="UTF-8">-->
+<!--?    <title>Google Map TreeSense</title>-->
+<!--?    <style>-->
+<!--?        /* Reset default margin and padding for all elements */-->
+<!--?        * {-->
+<!--?            margin: 0;-->
+<!--?            padding: 0;-->
+<!--?            box-sizing: border-box;-->
+<!--?        }-->
+
+<!--?        /* Apply a background color to the body */-->
+<!--?        body {-->
+<!--?            background-color: #f4f4f4;-->
+<!--?            font-family: Arial, sans-serif;-->
+<!--?            color: #333;-->
+<!--?            text-align: center;-->
+<!--?        }-->
+
+<!--?        /* Style the header */-->
+<!--?        h1 {-->
+<!--?            font-size: 24px;-->
+<!--?            margin-bottom: 20px;-->
+<!--?            color: #007BFF; /* Blue color for the header */-->
+<!--?        }-->
+
+<!--?        /* Style the map container */-->
+<!--?        #map {-->
+<!--?            height: 400px;-->
+<!--?            width: 80%; /* Responsive width */-->
+<!--?            margin: 0 auto;-->
+<!--?            border: 2px solid #ddd;-->
+<!--?            border-radius: 5px;-->
+<!--?        }-->
+
+<!--?        /* Style the output container */-->
+<!--?        #output {-->
+<!--?            margin-top: 20px;-->
+<!--?            padding: 20px;-->
+<!--?            background-color: #fff;-->
+<!--?            border: 2px solid #ddd;-->
+<!--?            border-radius: 5px;-->
+<!--?            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);-->
+<!--?        }-->
+
+<!--?        /* Style the cropped image */-->
+<!--?        #croppedImage {-->
+<!--?            max-width: 100%;-->
+<!--?            height: auto;-->
+<!--?            margin-top: 10px;-->
+<!--?        }-->
+
+<!--?        /* Style the location info div */-->
+<!--?        #locationInfo {-->
+<!--?            margin-top: 20px;-->
+<!--?            text-align: center;-->
+<!--?        }-->
+
+<!--?        /* Style paragraph elements inside location info */-->
+<!--?        #locationInfo p {-->
+<!--?            margin: 5px 0;-->
+<!--?            font-size: 16px;-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons */-->
+<!--?        .gm-style-drawing-panel {-->
+<!--?            background-color: rgba(255, 255, 255, 0.9);-->
+<!--?            border: 1px solid #ccc;-->
+<!--?            border-radius: 5px;-->
+<!--?            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons */-->
+<!--?        .gm-style-drawing-control {-->
+<!--?            background-color: #007BFF;-->
+<!--?            color: #fff;-->
+<!--?            font-weight: bold;-->
+<!--?            border: none;-->
+<!--?            border-radius: 5px;-->
+<!--?            margin: 5px;-->
+<!--?            cursor: pointer;-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons on hover */-->
+<!--?        .gm-style-drawing-control:hover {-->
+<!--?            background-color: #0056b3; /* Darker blue on hover */-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons when active */-->
+<!--?        .gm-style-drawing-control.active {-->
+<!--?            background-color: #ff5722; /* Orange color for active button */-->
+<!--?        }-->
+
+<!--?    </style>-->
+<!--?</head>-->
+<!--?<body>-->
+<!--?<h1>Draw Your Map Boundary</h1>-->
+<!--?<div id="map"></div>-->
+<!--?<div id="output">-->
+<!--?    <h2>Cropped Image</h2>-->
+<!--?    <img id="croppedImage" src="" alt="Cropped Image" crossorigin="anonymous">-->
+<!--?    <div id="locationInfo"></div>-->
+<!--?</div>-->
+
+<!--?<script>-->
+<!--?    // Initialize the map-->
+<!--?    function initMap() {-->
+<!--?        const map = new google.maps.Map(document.getElementById('map'), {-->
+<!--?            center: {lat: 23.2599, lng: 77.4126}, // Default center (Bhopal)-->
+<!--?            zoom: 12, // Default zoom level-->
+<!--?        });-->
+
+<!--?        let currentRectangle = null; // To keep track of the current rectangle-->
+
+<!--?        // Add event listeners to draw custom boundaries on the map-->
+<!--?        const drawingManager = new google.maps.drawing.DrawingManager({-->
+<!--?            drawingMode: google.maps.drawing.OverlayType.RECTANGLE,-->
+<!--?            drawingControl: true,-->
+<!--?            drawingControlOptions: {-->
+<!--?                position: google.maps.ControlPosition.TOP_CENTER,-->
+<!--?                drawingModes: ['rectangle'],-->
+<!--?            },-->
+<!--?        });-->
+
+<!--?        drawingManager.setMap(map);-->
+
+<!--?        google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {-->
+<!--?            if (currentRectangle) {-->
+<!--?                currentRectangle.setMap(null); // Remove the previous rectangle-->
+<!--?            }-->
+<!--?            currentRectangle = event.overlay;-->
+
+<!--?            // Capture the bounds of the drawn rectangle-->
+<!--?            const bounds = currentRectangle.getBounds();-->
+<!--?            console.log('Captured Bounds:', bounds);-->
+
+<!--?            // Generate a URL to the Cloudflare Workers proxy script-->
+<!--?            const proxyUrl = 'https://gmap-sih-img-proxy.vipulchaturvedi.workers.dev/'; // Replace with your Cloudflare Workers URL-->
+
+<!--?            // Create a new image element-->
+<!--?            const img = new Image();-->
+
+<!--?            // Set the image source to the Cloudflare Workers proxy URL-->
+<!--?            img.src = `${proxyUrl}?center=${bounds.getCenter().lat()},${bounds.getCenter().lng()}&zoom=15&size=640x640&path=fillcolor:transparent|${bounds.getNorthEast().toUrlValue()}|${bounds.getNorthEast().lat()},${bounds.getSouthWest().lng()}|${bounds.getSouthWest().toUrlValue()}|${bounds.getSouthWest().lat()},${bounds.getNorthEast().lng()}&key=AIzaSyCpzV2uci8gLyp8si2idL0Gy1PLUe_J8bU`;-->
+
+<!--?            // Display the cropped image-->
+<!--?            const croppedImage = document.getElementById('croppedImage');-->
+<!--?            croppedImage.src = img.src;-->
+
+<!--?            // Get the location info of the cropped image-->
+<!--?            const locationInfo = {-->
+<!--?                centerLat: bounds.getCenter().lat(),-->
+<!--?                centerLng: bounds.getCenter().lng(),-->
+<!--?                zoom: 15,-->
+<!--?            };-->
+
+<!--?            // Display location info on the web page-->
+<!--?            const locationInfoDiv = document.getElementById('locationInfo');-->
+<!--?            locationInfoDiv.innerHTML = `<p>Center Latitude: ${locationInfo.centerLat}</p><p>Center Longitude: ${locationInfo.centerLng}</p><p>Zoom Level: ${locationInfo.zoom}</p>`;-->
+<!--?        });-->
+<!--?    }-->
+<!--?</script>-->
+
+<!--?<!-- Include the Google Maps API script with your API key -->
+<!--?<script async defer-->
+<!--?        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpzV2uci8gLyp8si2idL0Gy1PLUe_J8bU&libraries=drawing&callback=initMap"></script>-->
+<!--?</body>-->
+<!--?</html>-->
+
+<!--?<!DOCTYPE html>-->
+<!--?<html lang="en">-->
+<!--?<head>-->
+<!--?    <meta charset="UTF-8">-->
+<!--?    <title>Google Map TreeSense</title>-->
+<!--?    <style>-->
+<!--?        /* Reset default margin and padding for all elements */-->
+<!--?        * {-->
+<!--?            margin: 0;-->
+<!--?            padding: 0;-->
+<!--?            box-sizing: border-box;-->
+<!--?        }-->
+
+<!--?        /* Apply a background color to the body */-->
+<!--?        body {-->
+<!--?            background-color: #f4f4f4;-->
+<!--?            font-family: Arial, sans-serif;-->
+<!--?            color: #333;-->
+<!--?            text-align: center;-->
+<!--?        }-->
+
+<!--?        /* Style the header */-->
+<!--?        h1 {-->
+<!--?            font-size: 24px;-->
+<!--?            margin-bottom: 20px;-->
+<!--?            color: #007BFF; /* Blue color for the header */-->
+<!--?        }-->
+
+<!--?        /* Style the map container */-->
+<!--?        #map {-->
+<!--?            height: 400px;-->
+<!--?            width: 80%; /* Responsive width */-->
+<!--?            margin: 0 auto;-->
+<!--?            border: 2px solid #ddd;-->
+<!--?            border-radius: 5px;-->
+<!--?        }-->
+
+<!--?        /* Style the output container */-->
+<!--?        #output {-->
+<!--?            margin-top: 20px;-->
+<!--?            padding: 20px;-->
+<!--?            background-color: #fff;-->
+<!--?            border: 2px solid #ddd;-->
+<!--?            border-radius: 5px;-->
+<!--?            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);-->
+<!--?        }-->
+
+<!--?        /* Style the cropped image */-->
+<!--?        #croppedImage {-->
+<!--?            max-width: 100%;-->
+<!--?            height: auto;-->
+<!--?            margin-top: 10px;-->
+<!--?        }-->
+
+<!--?        /* Style the location info div */-->
+<!--?        #locationInfo {-->
+<!--?            margin-top: 20px;-->
+<!--?            text-align: center;-->
+<!--?        }-->
+
+<!--?        /* Style paragraph elements inside location info */-->
+<!--?        #locationInfo p {-->
+<!--?            margin: 5px 0;-->
+<!--?            font-size: 16px;-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons */-->
+<!--?        .gm-style-drawing-panel {-->
+<!--?            background-color: rgba(255, 255, 255, 0.9);-->
+<!--?            border: 1px solid #ccc;-->
+<!--?            border-radius: 5px;-->
+<!--?            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons */-->
+<!--?        .gm-style-drawing-control {-->
+<!--?            background-color: #007BFF;-->
+<!--?            color: #fff;-->
+<!--?            font-weight: bold;-->
+<!--?            border: none;-->
+<!--?            border-radius: 5px;-->
+<!--?            margin: 5px;-->
+<!--?            cursor: pointer;-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons on hover */-->
+<!--?        .gm-style-drawing-control:hover {-->
+<!--?            background-color: #0056b3; /* Darker blue on hover */-->
+<!--?        }-->
+
+<!--?        /* Style the drawing control buttons when active */-->
+<!--?        .gm-style-drawing-control.active {-->
+<!--?            background-color: #ff5722; /* Orange color for active button */-->
+<!--?        }-->
+
+<!--?    </style>-->
+<!--?</head>-->
+<!--?<body>-->
+<!--?<h1>Draw Your Map Boundary</h1>-->
+<!--?<div id="map"></div>-->
+<!--?<form id="mapBoundaryForm" action="{{ url_for('main.process_map_boundary') }}" method="post">-->
+<!--?    <input type="hidden" name="boundaryData" id="boundaryData">-->
+<!--?    <button type="submit">Submit Boundary</button>-->
+<!--?</form>-->
+
+<!--?<div id="output">-->
+<!--?    <h2>Cropped Image</h2>-->
+<!--?    <img id="croppedImage" src="" alt="Cropped Image" crossorigin="anonymous">-->
+<!--?    <div id="locationInfo"></div>-->
+<!--?</div>-->
+
+<!--?<script>-->
+<!--?    let currentRectangle = null; // To keep track of the current rectangle-->
+
+<!--?    // Initialize the map-->
+<!--?    function initMap() {-->
+<!--?        const map = new google.maps.Map(document.getElementById('map'), {-->
+<!--?            center: {lat: 23.2599, lng: 77.4126}, // Default center (Bhopal)-->
+<!--?            zoom: 12, // Default zoom level-->
+<!--?        });-->
+
+<!--?        // Initialize Drawing Manager-->
+<!--?        const drawingManager = new google.maps.drawing.DrawingManager({-->
+<!--?            drawingMode: google.maps.drawing.OverlayType.RECTANGLE,-->
+<!--?            drawingControl: true,-->
+<!--?            drawingControlOptions: {-->
+<!--?                position: google.maps.ControlPosition.TOP_CENTER,-->
+<!--?                drawingModes: ['rectangle'],-->
+<!--?            },-->
+<!--?        });-->
+
+<!--?        drawingManager.setMap(map);-->
+
+<!--?        google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {-->
+<!--?            if (currentRectangle) {-->
+<!--?                currentRectangle.setMap(null); // Remove the previous rectangle-->
+<!--?            }-->
+<!--?            currentRectangle = event.overlay;-->
+
+<!--?            // Capture the bounds of the drawn rectangle-->
+<!--?            const bounds = currentRectangle.getBounds();-->
+<!--?            console.log('Captured Bounds:', bounds);-->
+
+<!--?            // Store the boundary data in a hidden input-->
+<!--?            const boundaryData = {-->
+<!--?                north: bounds.getNorthEast().lat(),-->
+<!--?                east: bounds.getNorthEast().lng(),-->
+<!--?                south: bounds.getSouthWest().lat(),-->
+<!--?                west: bounds.getSouthWest().lng(),-->
+<!--?            };-->
+
+<!--?            // Set the hidden input value-->
+<!--?            document.getElementById('boundaryData').value = JSON.stringify(boundaryData);-->
+
+<!--?            // Generate a URL to the cropped image using the boundary data-->
+<!--?            const proxyUrl = 'https://gmap-sih-img-proxy.vipulchaturvedi.workers.dev/'; // Replace with your Cloudflare Workers URL-->
+<!--?            const img = new Image();-->
+
+<!--?            // Set the image source to the Cloudflare Workers proxy URL-->
+<!--?            img.src = `${proxyUrl}?center=${bounds.getCenter().lat()},${bounds.getCenter().lng()}&zoom=15&size=640x640&path=fillcolor:transparent|${bounds.getNorthEast().toUrlValue()}|${bounds.getNorthEast().lat()},${bounds.getSouthWest().lng()}|${bounds.getSouthWest().toUrlValue()}|${bounds.getSouthWest().lat()},${bounds.getNorthEast().lng()}&key=YOUR_GOOGLE_MAPS_API_KEY`;-->
+
+<!--?            // Display the cropped image-->
+<!--?            const croppedImage = document.getElementById('croppedImage');-->
+<!--?            croppedImage.src = img.src;-->
+
+<!--?            // Get the location info of the cropped image-->
+<!--?            const locationInfo = {-->
+<!--?                centerLat: bounds.getCenter().lat(),-->
+<!--?                centerLng: bounds.getCenter().lng(),-->
+<!--?                zoom: 15,-->
+<!--?            };-->
+
+<!--?            // Display location info on the web page-->
+<!--?            const locationInfoDiv = document.getElementById('locationInfo');-->
+<!--?            locationInfoDiv.innerHTML = `<p>Center Latitude: ${locationInfo.centerLat}</p><p>Center Longitude: ${locationInfo.centerLng}</p><p>Zoom Level: ${locationInfo.zoom}</p>`;-->
+<!--?        });-->
+<!--?    }-->
+<!--?</script>-->
+
+<!--?<!-- Include the Google Maps API script with your API key -->
+<!--?<script async defer-->
+<!--?        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpzV2uci8gLyp8si2idL0Gy1PLUe_J8bU&libraries=drawing&callback=initMap"></script>-->
+<!--?</body>-->
+<!--?</html>-->
+
+
+<!-- -------------------------------------------------------------------------------------- -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Boundary TreeScape</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        h1 {
+            color: #2e7d32;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 i {
+            margin-right: 10px;
+            color: #43a047;
+        }
+
+        h2 {
+            color: #2e7d32;
+            font-size: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .submit-btn {
+            background: #43a047;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 160, 71, 0.2);
+            display: block;
+            margin: 2rem auto;
+        }
+
+        .submit-btn:hover {
+            background: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.3);
+        }
+
+        .submit-btn i {
+            margin-right: 8px;
+        }
+
+        #output {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        #croppedImage {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none; /* Hide initially */
+        }
+
+        #croppedImage.visible {
+            display: block;
+        }
+
+        #locationInfo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-card {
+            background: rgba(129, 199, 132, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.15);
+        }
+
+        .info-label {
+            color: #2e7d32;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            color: #43a047;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .notification {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .notification.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .notification.error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-map-marked-alt"></i>Draw Your Map Boundary</h1>
+        
+        <div id="map"></div>
+        
+        <div class="notification" id="notification"></div>
+
+        <form id="mapBoundaryForm" onsubmit="submitBoundary(event)">
+            <input type="hidden" name="boundaryData" id="boundaryData">
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-check-circle"></i>Submit Boundary
+            </button>
+        </form>
+
+        <div id="output">
+            <h2><i class="fas fa-crop-alt"></i> Selected Area</h2>
+            <img id="croppedImage" src="" alt="Cropped Image" crossorigin="anonymous">
+            <div id="locationInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentRectangle = null;
+
+        function submitBoundary(event) {
+            event.preventDefault();
+            
+            const boundaryDataInput = document.getElementById('boundaryData');
+            if (!boundaryDataInput.value) {
+                showNotification('Please draw a boundary first', true);
+                return;
+            }
+
+            // Parse the boundary data to ensure it's valid JSON
+            let boundaryData;
+            try {
+                boundaryData = JSON.parse(boundaryDataInput.value);
+            } catch (e) {
+                showNotification('Invalid boundary data', true);
+                return;
+            }
+
+            fetch('/process_map_boundary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    boundaryData: boundaryData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('Boundary submitted successfully!');
+                } else {
+                    showNotification(data.message || 'Error processing boundary', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error submitting boundary data', true);
+            });
+        }
+
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 23.2599, lng: 77.4126},
+                zoom: 12
+            });
+
+            const drawingManager = new google.maps.drawing.DrawingManager({
+                drawingMode: google.maps.drawing.OverlayType.RECTANGLE,
+                drawingControl: true,
+                drawingControlOptions: {
+                    position: google.maps.ControlPosition.TOP_CENTER,
+                    drawingModes: ['rectangle']
+                }
+            });
+
+            drawingManager.setMap(map);
+
+            google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
+                if (currentRectangle) {
+                    currentRectangle.setMap(null);
+                }
+                currentRectangle = event.overlay;
+
+                const bounds = currentRectangle.getBounds();
+                const boundaryData = {
+                    north: bounds.getNorthEast().lat(),
+                    east: bounds.getNorthEast().lng(),
+                    south: bounds.getSouthWest().lat(),
+                    west: bounds.getSouthWest().lng()
+                };
+
+                // Store the boundary data
+                document.getElementById('boundaryData').value = JSON.stringify(boundaryData);
+
+                // Display location info
+                const locationInfoDiv = document.getElementById('locationInfo');
+                locationInfoDiv.innerHTML = `
+                    <div class="info-card">
+                        <div class="info-label">Center Latitude</div>
+                        <div class="info-value">${bounds.getCenter().lat().toFixed(6)}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Center Longitude</div>
+                        <div class="info-value">${bounds.getCenter().lng().toFixed(6)}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Zoom Level</div>
+                        <div class="info-value">15</div>
+                    </div>
+                `;
+
+                // Update the cropped image
+                const proxyUrl = 'https://gmap-sih-img-proxy.vipulchaturvedi.workers.dev/';
+                const imageUrl = `${proxyUrl}?center=${bounds.getCenter().lat()},${bounds.getCenter().lng()}&zoom=15&size=640x640&path=fillcolor:transparent|${bounds.getNorthEast().toUrlValue()}|${bounds.getNorthEast().lat()},${bounds.getSouthWest().lng()}|${bounds.getSouthWest().toUrlValue()}|${bounds.getSouthWest().lat()},${bounds.getNorthEast().lng()}&key=YOUR_GOOGLE_MAPS_API_KEY`;
+                
+                const croppedImage = document.getElementById('croppedImage');
+                croppedImage.src = imageUrl;
+                croppedImage.style.display = 'block';
+            });
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpzV2uci8gLyp8si2idL0Gy1PLUe_J8bU&libraries=drawing&callback=initMap">
+    </script>
+</body>
+</html>

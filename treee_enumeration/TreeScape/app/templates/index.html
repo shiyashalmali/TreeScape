@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="description" content="Your solution for accurate tree enumeration">
+  <title>TreeScape</title>
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="static/icons/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="static/images/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/images/apple-touch-icon-180x180.png">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700" type="text/css">
+  <link rel="stylesheet" href="static/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@3.9.3/dist/full.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#2e7d32",      // Main green
+            secondary: "#43a047",    // Lighter green for accents
+            tertiary: "#357a38",     // Medium green
+            textDark: "#333333",     // Dark text
+            textLight: "#666666",    // Light text
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-cover bg-center bg-no-repeat font-sans" style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('static/images/tree1.jpg'); background-size: cover; background-attachment: fixed;">
+
+<!-- Header -->
+<header class="bg-primary py-8 text-white shadow-md backdrop-blur-sm bg-opacity-95">
+  <div class="container mx-auto flex items-center justify-between px-4">
+    <h1 class="text-3xl font-semibold flex items-center">
+      <img src="static/images/treeicon.png" class="w-10 h-10 mr-2" alt="TreeScape logo">
+      TreeScape
+    </h1>
+    <div class="md:hidden">
+      <div class="hamburger-icon">
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="container mx-auto py-8 text-white px-4">
+  <!-- Hero Section -->
+  <section id="hero" class="text-center mb-16 mt-8">
+    <h1 class="text-5xl font-bold mb-6 text-white">Your solution for accurate tree enumeration</h1>
+    <p class="text-gray-100 text-xl mb-8 max-w-3xl mx-auto">TreeScape is an open service for Tree Enumeration that provides access to visualizations and interactive interfaces to help you explore and interpret tree data with ease.</p>
+    <a href="/predict" class="bg-secondary text-white py-3 px-8 rounded-full text-xl hover:bg-primary transition duration-300 inline-flex items-center gap-2 hover:transform hover:scale-105">
+      Get Started
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+      </svg>
+    </a>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+    <div class="bg-white/90 p-8 text-center shadow-lg rounded-lg hover:shadow-xl transition duration-300 backdrop-blur-sm transform hover:-translate-y-1">
+      <div class="text-primary text-4xl mb-4">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-primary mb-4">Efficient Image Processing</h3>
+      <p class="text-textLight">Analyze images in real-time with powerful processing algorithms for accurate results.</p>
+    </div>
+    <div class="bg-white/90 p-8 text-center shadow-lg rounded-lg hover:shadow-xl transition duration-300 backdrop-blur-sm transform hover:-translate-y-1">
+      <div class="text-primary text-4xl mb-4">
+        <i class="fas fa-tree"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-primary mb-4">Tree Count and Green Land Analysis</h3>
+      <p class="text-textLight">Accurately compute tree count, green land area, and idle land distribution using AI-powered models.</p>
+    </div>
+    <div class="bg-white/90 p-8 text-center shadow-lg rounded-lg hover:shadow-xl transition duration-300 backdrop-blur-sm transform hover:-translate-y-1">
+      <div class="text-primary text-4xl mb-4">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-primary mb-4">Valuable Insights</h3>
+      <p class="text-textLight">Make informed decisions with valuable data and analytics, including optimal path suggestions for effective land management.</p>
+    </div>
+  </section>
+
+  <!-- Panoramic Section -->
+  <section class="py-16">
+    <div class="bg-white/5 backdrop-blur-sm p-4 rounded-lg">
+      <img src="static/images/panaromic.png" alt="Panoramic view" class="mx-auto rounded-lg shadow-lg w-full object-cover" />
+    </div>
+  </section>
+
+  <!-- Additional Section -->
+  <section class="bg-tertiary/90 backdrop-blur-sm text-white py-16 rounded-lg mt-16">
+    <div class="text-center px-4">
+      <h2 class="text-3xl font-bold mb-4">Explore More about TreeScape</h2>
+      <p class="mb-8 text-lg max-w-2xl mx-auto">We offer in-depth analysis and insights about tree data, helping you make decisions with precision.</p>
+      <a href="/predict" class="bg-white text-primary py-3 px-8 rounded-full text-xl hover:bg-gray-100 transition duration-300 font-semibold inline-flex items-center gap-2 hover:transform hover:scale-105">
+        Learn More
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-900/95 backdrop-blur-sm py-8 mt-16">
+  <div class="container mx-auto text-center text-white px-4">
+    <p class="text-lg">&copy; 2024 TreeScape</p>
+    <div class="mt-4 space-x-6">
+      <a href="mailto:ritikasahu.2828@gmail.com" class="hover:text-gray-400 transition duration-200">Contact</a>
+      <a href="/legal" class="hover:text-gray-400 transition duration-200">Terms</a>
+    </div>
+    <div class="mt-4 text-sm text-gray-400">
+      <p>Made with <span class="text-red-500">&#9829;</span> by <a href="/about#team" class="hover:text-white transition duration-200">Our Team</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="static/js/script.js" async></script>
+<script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>
+</body>
+</html>

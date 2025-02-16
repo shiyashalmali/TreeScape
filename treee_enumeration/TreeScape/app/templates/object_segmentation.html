@@ -1,0 +1,505 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+h2, h3 {
+  color: #333;
+  padding: 20px;
+}
+
+h3 {
+  display: flex;
+  align-items: center;
+}
+
+input[type="file"] {
+  display: block;
+  margin: 20px;
+}
+
+button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.image-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.image-container img {
+  max-width: calc(50% - 40px);
+}
+
+#green-cover-percentage {
+  font-size: 24px;
+}
+#idle-land-percentage{
+  font-size: 24px;
+}
+</style>
+</head>
+<body>
+
+<center><h2>Green Cover Estimator</h2>
+
+<input type="file" id="image-file" accept="image/*">
+<button onclick="processImage()">Process Image</button>
+</center>
+<h3>Processed Image:</h3>
+<div class="image-container">
+  <img id="uploaded-image" src="" alt="Uploaded Image">
+  <img id="processed-image" src="" alt="Processed Image">
+</div>
+
+<h4>Green Cover Percentage: <span id="green-cover-percentage"></span></h4>
+<p id="green-cover-percentage"></p>
+<h4>Idle Land Percentage: <span id="idle-land-percentage"></span></h4>
+<p id="idle-land-percentage"></p>
+<script>
+function processImage() {
+  const fileInput = document.getElementById('image-file');
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+    const uploadedImage = document.getElementById('uploaded-image');
+    const processedImage = document.getElementById('processed-image');
+    const greenCoverPercentage = document.getElementById('green-cover-percentage');
+    const idleLandPercentage = document.getElementById('idle-land-percentage');
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let blackPixelCount = 0;
+
+      // Calculate the mean green value
+      let totalGreen = 0;
+      for (let i = 1; i < imageData.data.length; i += 4) {
+        totalGreen += imageData.data[i];
+      }
+      const meanGreen = totalGreen / (imageData.data.length / 4);
+
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        let gray = (imageData.data[i + 1]) * 0.587; // Keep only green channel
+
+        if (gray < meanGreen / 1.5) {
+          gray = 0;
+          blackPixelCount++;
+        } else {
+          gray = 255;
+        }
+
+        imageData.data[i] = gray;   // Red channel
+        imageData.data[i + 1] = gray; // Green channel
+        imageData.data[i + 2] = gray; // Blue channel
+        imageData.data[i + 3] = 255;  // Alpha channel
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      // Display the processed image and green cover percentage
+      processedImage.src = canvas.toDataURL();
+      greenCoverPercentage.textContent = ((blackPixelCount / (canvas.width * canvas.height)) * 100).toFixed(2) + '%';
+      idleLandPercentage.textContent = (100 - ((blackPixelCount / (canvas.width * canvas.height)) * 100)).toFixed(2) + '%';
+    };
+    img.src = reader.result;
+
+    // Display the uploaded image
+    uploadedImage.src = reader.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+</script>
+
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Green Cover Estimator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        h2 {
+            color: #2e7d32;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 i {
+            margin-right: 10px;
+            color: #43a047;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border: 2px dashed #81c784;
+            border-radius: 15px;
+            background: rgba(129, 199, 132, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: rgba(129, 199, 132, 0.2);
+        }
+
+        #image-file {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #66bb6a;
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-input-label:hover {
+            background: #43a047;
+            transform: translateY(-2px);
+        }
+
+        .process-btn {
+            background: #43a047;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 160, 71, 0.2);
+        }
+
+        .process-btn:hover {
+            background: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.3);
+        }
+
+        .process-btn i {
+            margin-right: 8px;
+        }
+
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .image-wrapper {
+            background: white;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-wrapper.empty {
+            justify-content: center;
+            align-items: center;
+            background: rgba(129, 199, 132, 0.1);
+            border: 2px dashed #81c784;
+        }
+
+        .image-wrapper:not(.empty) .placeholder-text {
+            display: none;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            object-fit: cover;
+            display: none;
+        }
+
+        .image-wrapper img.visible {
+            display: block;
+        }
+
+        .image-title {
+            color: #2e7d32;
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-title {
+            color: #2e7d32;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            color: #43a047;
+            font-weight: bold;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            color: #66bb6a;
+            margin-bottom: 1rem;
+        }
+
+        .selected-file-name {
+            color: #666;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .placeholder-text i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #81c784;
+        }
+
+        .placeholder-text p {
+            color: #66bb6a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .image-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-leaf"></i>Green Cover Estimator</h2>
+        
+        <div class="upload-section">
+            <label for="image-file" class="file-input-label">
+                <i class="fas fa-upload"></i> Choose Image
+            </label>
+            <input type="file" id="image-file" accept="image/*" onchange="updateFileName()">
+            <div class="selected-file-name" id="file-name"></div>
+            <button onclick="processImage()" class="process-btn">
+                <i class="fas fa-magic"></i>Process Image
+            </button>
+        </div>
+
+        <div class="image-container">
+            <div class="image-wrapper empty" id="original-wrapper">
+                <div class="image-title">
+                    <i class="fas fa-image"></i> Original Image
+                </div>
+                <div class="placeholder-text">
+                    <i class="fas fa-upload"></i>
+                    <p>Upload an image to see preview</p>
+                </div>
+                <img id="uploaded-image" src="" alt="Uploaded Image">
+            </div>
+            <div class="image-wrapper empty" id="processed-wrapper">
+                <div class="image-title">
+                    <i class="fas fa-check-circle"></i> Processed Image
+                </div>
+                <div class="placeholder-text">
+                    <i class="fas fa-magic"></i>
+                    <p>Processed image will appear here</p>
+                </div>
+                <img id="processed-image" src="" alt="Processed Image">
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-tree stat-icon"></i>
+                <div class="stat-title">Green Cover Percentage</div>
+                <div class="stat-value" id="green-cover-percentage">-</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-mountain stat-icon"></i>
+                <div class="stat-title">Idle Land Percentage</div>
+                <div class="stat-value" id="idle-land-percentage">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateFileName() {
+            const fileInput = document.getElementById('image-file');
+            const fileName = document.getElementById('file-name');
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            } else {
+                fileName.textContent = '';
+            }
+        }
+
+        function processImage() {
+            const fileInput = document.getElementById('image-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select an image first.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const uploadedImage = document.getElementById('uploaded-image');
+                const processedImage = document.getElementById('processed-image');
+                const greenCoverPercentage = document.getElementById('green-cover-percentage');
+                const idleLandPercentage = document.getElementById('idle-land-percentage');
+                const originalWrapper = document.getElementById('original-wrapper');
+                const processedWrapper = document.getElementById('processed-wrapper');
+
+                const img = new Image();
+                img.onload = () => {
+                    // Remove empty state and show original image
+                    originalWrapper.classList.remove('empty');
+                    uploadedImage.classList.add('visible');
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    let blackPixelCount = 0;
+
+                    // Calculate the mean green value
+                    let totalGreen = 0;
+                    for (let i = 1; i < imageData.data.length; i += 4) {
+                        totalGreen += imageData.data[i];
+                    }
+                    const meanGreen = totalGreen / (imageData.data.length / 4);
+
+                    for (let i = 0; i < imageData.data.length; i += 4) {
+                        let gray = (imageData.data[i + 1]) * 0.587;
+                        if (gray < meanGreen / 1.5) {
+                            gray = 0;
+                            blackPixelCount++;
+                        } else {
+                            gray = 255;
+                        }
+                        imageData.data[i] = gray;
+                        imageData.data[i + 1] = gray;
+                        imageData.data[i + 2] = gray;
+                        imageData.data[i + 3] = 255;
+                    }
+
+                    ctx.putImageData(imageData, 0, 0);
+
+                    // Remove empty state and show processed image
+                    processedWrapper.classList.remove('empty');
+                    processedImage.classList.add('visible');
+                    processedImage.src = canvas.toDataURL();
+
+                    // Update percentages
+                    greenCoverPercentage.textContent = 
+                        ((blackPixelCount / (canvas.width * canvas.height)) * 100).toFixed(2) + '%';
+                    idleLandPercentage.textContent = 
+                        (100 - ((blackPixelCount / (canvas.width * canvas.height)) * 100)).toFixed(2) + '%';
+                };
+
+                img.src = reader.result;
+                uploadedImage.src = reader.result;
+            };
+
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

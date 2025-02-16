@@ -1,0 +1,471 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h2, h3 {
+            color: #333;
+            padding: 20px;
+        }
+
+        h3 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            margin: 20px auto;
+            font-size: 16px;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <center>
+        <h2>Tree Species Categorization</h2>
+        <form id="uploadForm">
+            <input type="file" name="file" id="photo" accept=".png, .jpg, .jpeg" required onchange="previewImage(event)">
+            <br>
+            <img id="photo-preview" src="#" alt="Selected Image Preview" style="display:none; max-width: 400px;">
+            <br>
+            <button type="submit">Process Image</button>
+        </form>
+    </center>
+
+    <h3>Processed Image:</h3>
+    <canvas id="processedCanvas" width="400" height="300"></canvas>
+
+    <script>
+        // Function to preview the image before uploading
+        function previewImage(event) {
+            const input = event.target;
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                const imgElement = document.getElementById('photo-preview');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('photo');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const base64Image = reader.result.split(',')[1]; // Extract base64 part
+                    const payload = { image: base64Image };
+
+                    fetch('/classify-trees', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error processing image: ' + data.error);
+                            return;
+                        }
+
+                        // Display tree counts
+                        alert(`Coniferous Trees: ${data.coniferous_count}\nDeciduous Trees: ${data.deciduous_count}`);
+
+                        // Display processed image
+                        const processedImageURL = `${data.processed_image_url}?t=${new Date().getTime()}`; // Prevent cache
+                        loadImage(processedImageURL, 'processedCanvas');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to process the image. Please try again.');
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please upload an image.');
+            }
+        });
+
+        // Function to load and display the image on the canvas
+        function loadImage(imagePath, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous content
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = imagePath;
+        }
+    </script>
+</body>
+</html> -->
+
+<!-- ----------------------------------------------------------------------------------- -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tree Species Categorization</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        h2 {
+            color: #2e7d32;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 i {
+            margin-right: 10px;
+            color: #43a047;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border: 2px dashed #81c784;
+            border-radius: 15px;
+            background: rgba(129, 199, 132, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: rgba(129, 199, 132, 0.2);
+        }
+
+        #photo {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #66bb6a;
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-input-label:hover {
+            background: #43a047;
+            transform: translateY(-2px);
+        }
+
+        .process-btn {
+            background: #43a047;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 160, 71, 0.2);
+            margin: 20px auto;
+            display: block;
+        }
+
+        .process-btn:hover {
+            background: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.3);
+        }
+
+        .process-btn i {
+            margin-right: 8px;
+        }
+
+        .image-container {
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+
+        .preview-container, .result-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .preview-container:hover, .result-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-title {
+            color: #2e7d32;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        #photo-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            display: none;
+            margin: 0 auto;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .tree-counts {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(129, 199, 132, 0.1);
+            border-radius: 15px;
+        }
+
+        .count-item {
+            display: inline-block;
+            margin: 0 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .count-item i {
+            color: #43a047;
+            margin-right: 8px;
+        }
+
+        .selected-file-name {
+            color: #666;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+            color: #43a047;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-tree"></i>Tree Species Categorization</h2>
+        
+        <div class="upload-section">
+            <form id="uploadForm">
+                <label for="photo" class="file-input-label">
+                    <i class="fas fa-upload"></i> Choose Image
+                </label>
+                <input type="file" id="photo" name="file" accept=".png, .jpg, .jpeg" required onchange="previewImage(event)">
+                <div class="selected-file-name" id="file-name"></div>
+                <button type="submit" class="process-btn">
+                    <i class="fas fa-magic"></i>Process Image
+                </button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-2x"></i>
+            <p>Processing image...</p>
+        </div>
+
+        <div class="tree-counts" id="tree-counts" style="display: none;">
+            <div class="count-item">
+                <i class="fas fa-leaf"></i>
+                <span>Coniferous Trees: </span>
+                <span id="coniferous-count">0</span>
+            </div>
+            <div class="count-item">
+                <i class="fas fa-tree"></i>
+                <span>Deciduous Trees: </span>
+                <span id="deciduous-count">0</span>
+            </div>
+        </div>
+
+        <div class="image-container">
+            <div class="preview-container">
+                <div class="section-title">
+                    <i class="fas fa-image"></i> Preview Image
+                </div>
+                <img id="photo-preview" src="#" alt="Selected Image Preview">
+            </div>
+
+            <div class="result-container">
+                <div class="section-title">
+                    <i class="fas fa-check-circle"></i> Processed Image
+                </div>
+                <canvas id="processedCanvas" width="800" height="600"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateFileName() {
+            const fileInput = document.getElementById('photo');
+            const fileName = document.getElementById('file-name');
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            } else {
+                fileName.textContent = '';
+            }
+        }
+
+        function previewImage(event) {
+            const input = event.target;
+            const reader = new FileReader();
+            updateFileName();
+
+            reader.onload = function() {
+                const imgElement = document.getElementById('photo-preview');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('photo');
+            const file = fileInput.files[0];
+            const loading = document.getElementById('loading');
+
+            if (file) {
+                loading.style.display = 'block';
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const base64Image = reader.result.split(',')[1];
+                    const payload = { image: base64Image };
+
+                    fetch('/classify-trees', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        loading.style.display = 'none';
+                        if (data.error) {
+                            alert('Error processing image: ' + data.error);
+                            return;
+                        }
+
+                        // Update tree counts
+                        document.getElementById('coniferous-count').textContent = data.coniferous_count;
+                        document.getElementById('deciduous-count').textContent = data.deciduous_count;
+                        document.getElementById('tree-counts').style.display = 'block';
+
+                        // Display processed image
+                        const processedImageURL = `${data.processed_image_url}?t=${new Date().getTime()}`;
+                        loadImage(processedImageURL, 'processedCanvas');
+                    })
+                    .catch(error => {
+                        loading.style.display = 'none';
+                        console.error('Error:', error);
+                        alert('Failed to process the image. Please try again.');
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please upload an image.');
+            }
+        });
+
+        function loadImage(imagePath, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = function() {
+                // Adjust canvas size to match image aspect ratio
+                const aspectRatio = img.width / img.height;
+                canvas.width = Math.min(800, img.width);
+                canvas.height = canvas.width / aspectRatio;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = imagePath;
+        }
+    </script>
+</body>
+</html>
